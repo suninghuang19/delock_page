@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="DeLock: Breaking Lock-In by Preserving Priors for Test-Time Skill Steering in Low-Data VLA Post-Training.">
+  <meta name="keywords" content="DeLock, VLA, Robot Foundation Models, Low-Data Post-Training, Contrastive Prompt Guidance">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeLock: Breaking Lock-In</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.png?v=2">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}]});"></script>
+</head>
+<body>
+
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-2 publication-title">Breaking Lock-In: Preserving Priors for Test-Time Skill Steering in Low-Data VLA Post-Training</h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Suning Huang</span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Stanford University</span>
+          </div>
+
+          <div class="is-size-6 publication-venue" style="margin: 0.5rem auto;">
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (Coming Soon)</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Abstract -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Have you ever post-trained a generalist vision-language-action (VLA) policy on a small demonstration dataset, only to find that it stops responding to new instructions and is limited to behaviors observed during post-training? We identify this phenomenon as <em>lock-in</em>: after low-data, supervised fine-tuning (SFT), the policy becomes overly specialized to the post-training data and fails to generalize to novel instructions, manifesting as concept lock-in (fixation on training objects/attributes) and spatial lock-in (fixation on training spatial targets). Many existing remedies introduce additional supervision signals, such as those derived from foundation models or auxiliary objectives, or rely on augmented datasets to recover generalization. In this paper, we show that the policy's internal pre-trained knowledge is sufficient: <strong>DeLock</strong> mitigates lock-in by preserving visual grounding during post-training and applying test-time contrastive prompt guidance to steer the policy's denoising dynamics according to novel instructions. Across eight simulation and real-world evaluations, DeLock consistently outperforms strong baselines and matches or exceeds the performance of a state-of-the-art generalist policy post-trained with substantially more curated demonstrations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Video -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Video</h2>
+        <div class="video-placeholder">
+          Video coming soon
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Lock-In Failure Mode -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title">Lock-In Failure Mode</h2>
+        <div class="content has-text-justified">
+          <p>
+            In low-data post-training, VLA policies can over-specialize to the training-demonstration distribution, becoming difficult to steer under novel prompts. We identify two forms of this failure: <strong>concept lock-in</strong>, where the policy fixates on training object identities or attributes regardless of the prompt (e.g., always picking "bread" even when instructed to pick "apple"), and <strong>spatial lock-in</strong>, where the policy remains anchored to training spatial targets regardless of the spatial instruction (e.g., always reaching for the "right cup" even when told "left cup").
+          </p>
+        </div>
+        <img src="./static/images/teaser.png" class="figure-image" alt="Lock-In Failure Mode illustration showing concept and spatial lock-in." style="width: 65%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Method -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title has-text-centered">Method</h2>
+        <div class="content has-text-justified">
+          <p>
+            DeLock combines two tightly coupled ingredients to preserve a generalist policy's generalization under narrow demonstrations:
+          </p>
+          <ul>
+            <li>
+              <strong>Visual Encoder Weight-Drift Regularization.</strong> During post-training, we augment the SFT objective with an L2 penalty on visual encoder drift to preserve pre-trained visual grounding:
+              <div class="method-equation">
+                $$\mathcal{L}_{\text{DeLock}}(\theta;\, \mathcal{D}^{\star}) = \mathcal{L}_{\text{BC}}(\theta;\, \mathcal{D}^{\star}) + \lambda \left\| \theta_v - \theta_v^{\text{pre}} \right\|_2^2$$
+              </div>
+            </li>
+            <li>
+              <strong>Contrastive Prompt Guidance (CPG).</strong> At test time, we steer the policy's denoising dynamics by contrasting a positive (novel) prompt $\tau^{+}$ with a negative (trained) prompt $\tau^{-}$ (capturing post-training bias toward training targets):
+              <div class="method-equation">
+                $$v_{\text{CPG},k}^{t} = v_{\theta}(o_k, \tau^{-}, t) + w \left( v_{\theta}(o_k, \tau^{+}, t) - v_{\theta}(o_k, \tau^{-}, t) \right)$$
+              </div>
+            </li>
+          </ul>
+        </div>
+        <img src="./static/images/method_cpg.png" class="figure-image" alt="Contrastive Prompt Guidance diagram." style="width: 100%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Benchmarking -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-title has-text-centered">Benchmarking Lock-In</h2>
+        <div class="content has-text-justified">
+          <p>
+            To systematically evaluate concept- and spatial-reasoning generalization under low-data post-training, we develop an 8-task evaluation suite spanning both simulation and real-world settings. Each task probes whether a post-trained policy can re-steer a learned skill when only the instruction changes.
+          </p>
+        </div>
+        <div class="has-text-centered" style="margin-bottom: 1.5rem;">
+          <img src="./static/images/benchmark_suite.png" class="figure-image" alt="8-task benchmark suite." style="width: 100%;">
+        </div>
+        <div class="has-text-centered">
+          <img src="./static/images/benchmark_table.png" class="figure-image" alt="Instruction-level shifts table." style="width: 100%;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Qualitative Results -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 section-title has-text-centered">Qualitative Results</h2>
+    <div class="content has-text-justified" style="margin-bottom: 1.5rem;">
+      <p>
+        Below we show DeLock's rollouts across all eight tasks. The policy was only post-trained on narrow demonstrations and
+        <strong>has never seen these OOD object locations or OOD instructions during SFT</strong>.
+        Despite this, DeLock successfully accomplishes these tasks at test time without additional training or supervision.
+      </p>
+    </div>
+
+    <!-- ===== Simulation Tasks (LIBERO) ===== -->
+    <h3 class="title is-4 has-text-centered" style="margin-bottom: 1.2rem;">Simulation Tasks (LIBERO Setting)</h3>
+
+    <!-- Sim: MokaPot-on-Stove — OOD Location -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">MokaPot-on-Stove &mdash; OOD Location</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t1_ood_loc/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put moka pot on stove"<br>(In-Distribution Location)</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t1_ood_loc/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put moka pot on stove"<br>(<strong>OOD Location</strong>)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sim: Mug-on-Plate [C] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Mug-on-Plate [C] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t2_ood_inst/ind_green_mug.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put <em>green</em> mug on plate"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t2_ood_inst/ood_red_mug.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "put <em><strong>red</strong></em> mug on plate"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t2_ood_inst/ood_blue_mug.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "put <em><strong>blue</strong></em> mug on plate"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sim: Open-Microwave [S] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Open-Microwave [S] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t5_ood_inst/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "open <em>lower</em> microwave"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t5_ood_inst/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "open <em><strong>upper</strong></em> microwave"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sim: Mug-on-Plate [S] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Mug-on-Plate [S] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t6_ood_inst/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put mug on <em>left</em> plate" (robot's left)</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t6_ood_inst/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "put mug on <em><strong>right</strong></em> plate" (robot's right)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Real-World Tasks (DROID) ===== -->
+    <h3 class="title is-4 has-text-centered" style="margin-top: 2rem; margin-bottom: 1.2rem;">Real-World Tasks (DROID Setting)</h3>
+
+    <!-- Real: Food-on-Plate [C] — OOD Location -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Food-on-Plate [C] &mdash; OOD Location</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t4_ood_loc/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put bread on plate"<br>(In-Distribution Location)</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t4_ood_loc/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put bread on plate"<br>(<strong>OOD Location</strong>)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real: Food-on-Plate [C] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Food-on-Plate [C] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t4_ood_inst/ind_bread.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put <em>bread</em> on plate"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t4_ood_inst/ood_apple.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "put <em><strong>apple</strong></em> on plate"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t4_ood_inst/ind_carrot.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "put <em><strong>carrot</strong></em> on plate"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real: Block-Stacking [C] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Block-Stacking [C] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t3_ood_inst/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "stack <em>blue</em> block on <em>green</em> block"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t3_ood_inst/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "stack <em><strong>green</strong></em> block on <em><strong>blue</strong></em> block"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real: Cup-to-Box [S] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Cup-to-Box [S] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t7_ood_inst/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "put <em>right</em> cup to box" (robot's right)</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t7_ood_inst/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "put <em><strong>left</strong></em> cup to box" (robot's left)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real: Open-Labeled-Door [C+S] — OOD Instruction -->
+    <div class="video-row">
+      <h4 class="title is-5 has-text-centered">Open-Labeled-Door [C+S] &mdash; OOD Instruction</h4>
+      <div class="columns is-centered">
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t8_ood_inst/ind.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Trained Prompt:</span> "open door labeled with <em>banana</em>"</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="video-item">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/t8_ood_inst/ood.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption"><span class="tag-label">Novel Prompt:</span> "open door labeled with <em><strong>apple</strong></em>"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- BibTeX -->
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@inproceedings{anonymous2024delock,
+}</code></pre>
+  </div>
+</section>
+
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered" style="font-size: 0.85rem;">
+          <p>
+            This website template is borrowed from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>,
+            licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
