@@ -161,6 +161,18 @@
               <div class="method-equation">
                 $$v_{\text{CPG},k}^{t} = v_{\theta}(o_k, \tau^{-}, t) + w \left( v_{\theta}(o_k, \tau^{+}, t) - v_{\theta}(o_k, \tau^{-}, t) \right)$$
               </div>
+              <p>
+                Intuitively, CPG is related to negative-prompt guidance in image generation:
+                instead of only suppressing an undesired concept, we contrast the novel prompt
+                against the trained prompt to steer the policy away from post-training bias
+                and toward the intended instruction.
+                For a familiar example of negative-prompt guidance in image generation, see
+                <a href="https://docs.aws.amazon.com/nova/latest/userguide/prompting-image-negative.html"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  this example
+                </a>.
+              </p>
             </li>
           </ul>
         </div>
